@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 
 import { thEvents, thBugSuggestionLimit } from '../../helpers/constants';
 import { withPinnedJobs } from '../context/PinnedJobs';
-import { withPushes } from '../context/Pushes';
 import { getLogViewerUrl, getReftestUrl } from '../../helpers/url';
 import BugJobMapModel from '../../models/bugJobMap';
 import BugSuggestionsModel from '../../models/bugSuggestions';
@@ -152,8 +151,14 @@ class DetailsPanel extends React.Component {
     this.setState({ classifications, bugs });
   };
 
+  findPush = pushId => {
+    const { pushList } = this.props;
+
+    return pushList.find(push => pushId === push.id);
+  };
+
   selectJob() {
-    const { repoName, selectedJob, getPush } = this.props;
+    const { repoName, selectedJob } = this.props;
 
     this.setState(
       { jobDetails: [], suggestions: [], jobDetailLoading: true },
@@ -206,7 +211,7 @@ class DetailsPanel extends React.Component {
               // is what we'll pass to the rest of the details panel.  It has extra fields like
               // taskcluster_metadata.
               Object.assign(selectedJob, jobResult);
-              const jobRevision = getPush(selectedJob.push_id).revision;
+              const jobRevision = this.findPush(selectedJob.push_id).revision;
 
               jobDetails = jobDetailResult;
 
@@ -410,7 +415,7 @@ DetailsPanel.propTypes = {
   classificationMap: PropTypes.object.isRequired,
   setPinBoardVisible: PropTypes.func.isRequired,
   isPinBoardVisible: PropTypes.bool.isRequired,
-  getPush: PropTypes.func.isRequired,
+  pushList: PropTypes.array.isRequired,
   selectedJob: PropTypes.object,
 };
 
@@ -418,8 +423,9 @@ DetailsPanel.defaultProps = {
   selectedJob: null,
 };
 
-const mapStateToProps = ({ selectedJob: { selectedJob } }) => ({ selectedJob });
+const mapStateToProps = ({
+  selectedJob: { selectedJob },
+  pushes: { pushList },
+}) => ({ selectedJob, pushList });
 
-export default connect(mapStateToProps)(
-  withPushes(withPinnedJobs(DetailsPanel)),
-);
+export default connect(mapStateToProps)(withPinnedJobs(DetailsPanel));

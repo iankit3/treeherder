@@ -1,8 +1,10 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
+import thunkMiddleware from 'redux-thunk';
 import createDebounce from 'redux-debounce';
 
 import * as selectedJobStore from './stores/selectedJob';
 import * as notificationStore from './stores/notifications';
+import * as pushesStore from './stores/pushes';
 
 export default () => {
   const debounceConfig = {
@@ -12,9 +14,13 @@ export default () => {
   const reducers = combineReducers({
     notifications: notificationStore.reducer,
     selectedJob: selectedJobStore.reducer,
+    pushes: pushesStore.reducer,
   });
 
-  const store = createStore(reducers, applyMiddleware(debouncer));
+  const store = createStore(
+    reducers,
+    applyMiddleware(debouncer, thunkMiddleware),
+  );
 
   return { store };
 };

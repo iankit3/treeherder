@@ -70,6 +70,7 @@
     "reactstrap": "7.1.0",
     "redux": "4.0.1",
     "redux-debounce": "1.0.1",
+    "redux-thunk": "2.3.0",
     "taskcluster-client-web": "8.1.1",
     "taskcluster-lib-scopes": "10.0.2",
     "webpack": "4.33.0",
@@ -93,8 +94,8 @@
     "jest-dom": "3.4.0",
     "node-fetch": "2.6.0",
     "prettier": "1.17.1",
-    "webpack-dev-server": "3.6.0",
-    "react-testing-library": "7.0.1"
+    "react-testing-library": "7.0.1",
+    "webpack-dev-server": "3.6.0"
   },
   "scripts": {
     "build": "node ./node_modules/webpack/bin/webpack.js --mode production",

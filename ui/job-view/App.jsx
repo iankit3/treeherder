@@ -16,7 +16,6 @@ import FilterModel from '../models/filter';
 import RepositoryModel from '../models/repository';
 
 import Notifications from './Notifications';
-import { Pushes } from './context/Pushes';
 import { PinnedJobs } from './context/PinnedJobs';
 import PrimaryNavBar from './headerbars/PrimaryNavBar';
 import ActiveFilters from './headerbars/ActiveFilters';
@@ -197,6 +196,17 @@ class App extends React.Component {
     link.href = thFavicons[status] || thFavicons.open;
   };
 
+  getAllShownJobs = pushId => {
+    const {
+      pushes: { jobMap },
+    } = store.getState();
+    const jobList = Object.values(jobMap);
+
+    return pushId
+      ? jobList.filter(job => job.push_id === pushId && job.visible)
+      : jobList.filter(job => job.visible);
+  };
+
   toggleFieldFilterVisible = () => {
     this.setState(prevState => ({
       isFieldFilterVisible: !prevState.isFieldFilterVisible,
@@ -308,87 +318,86 @@ class App extends React.Component {
     return (
       <div id="global-container" className="height-minus-navbars">
         <Provider store={store}>
-          <Pushes filterModel={filterModel}>
-            <PinnedJobs>
-              <KeyboardShortcuts
+          <PinnedJobs>
+            <KeyboardShortcuts
+              filterModel={filterModel}
+              showOnScreenShortcuts={this.showOnScreenShortcuts}
+            >
+              <PrimaryNavBar
+                repos={repos}
+                updateButtonClick={this.updateButtonClick}
+                serverChanged={serverChanged}
                 filterModel={filterModel}
-                showOnScreenShortcuts={this.showOnScreenShortcuts}
+                setUser={this.setUser}
+                user={user}
+                setCurrentRepoTreeStatus={this.setCurrentRepoTreeStatus}
+                getAllShownJobs={this.getAllShownJobs}
+                duplicateJobsVisible={duplicateJobsVisible}
+                groupCountsExpanded={groupCountsExpanded}
+                toggleFieldFilterVisible={this.toggleFieldFilterVisible}
+                pushHealthVisibility={pushHealthVisibility}
+                setPushHealthVisibility={this.setPushHealthVisibility}
+              />
+              <SplitPane
+                split="horizontal"
+                size={`${pushListPct}%`}
+                onChange={size => this.handleSplitChange(size)}
               >
-                <PrimaryNavBar
-                  repos={repos}
-                  updateButtonClick={this.updateButtonClick}
-                  serverChanged={serverChanged}
-                  filterModel={filterModel}
-                  setUser={this.setUser}
-                  user={user}
-                  setCurrentRepoTreeStatus={this.setCurrentRepoTreeStatus}
-                  getAllShownJobs={this.getAllShownJobs}
-                  duplicateJobsVisible={duplicateJobsVisible}
-                  groupCountsExpanded={groupCountsExpanded}
-                  toggleFieldFilterVisible={this.toggleFieldFilterVisible}
-                  pushHealthVisibility={pushHealthVisibility}
-                  setPushHealthVisibility={this.setPushHealthVisibility}
-                />
-                <SplitPane
-                  split="horizontal"
-                  size={`${pushListPct}%`}
-                  onChange={size => this.handleSplitChange(size)}
-                >
-                  <div className="d-flex flex-column w-100">
-                    {(isFieldFilterVisible || !!filterBarFilters.length) && (
-                      <ActiveFilters
-                        classificationTypes={classificationTypes}
+                <div className="d-flex flex-column w-100">
+                  {(isFieldFilterVisible || !!filterBarFilters.length) && (
+                    <ActiveFilters
+                      classificationTypes={classificationTypes}
+                      filterModel={filterModel}
+                      filterBarFilters={filterBarFilters}
+                      isFieldFilterVisible={isFieldFilterVisible}
+                      toggleFieldFilterVisible={this.toggleFieldFilterVisible}
+                    />
+                  )}
+                  {serverChangedDelayed && (
+                    <UpdateAvailable
+                      updateButtonClick={this.updateButtonClick}
+                    />
+                  )}
+                  <div id="th-global-content" className="th-global-content">
+                    <span className="th-view-content" tabIndex={-1}>
+                      <PushList
+                        user={user}
+                        repoName={repoName}
+                        revision={revision}
+                        currentRepo={currentRepo}
                         filterModel={filterModel}
-                        filterBarFilters={filterBarFilters}
-                        isFieldFilterVisible={isFieldFilterVisible}
-                        toggleFieldFilterVisible={this.toggleFieldFilterVisible}
+                        duplicateJobsVisible={duplicateJobsVisible}
+                        groupCountsExpanded={groupCountsExpanded}
+                        pushHealthVisibility={pushHealthVisibility}
+                        getAllShownJobs={this.getAllShownJobs}
                       />
-                    )}
-                    {serverChangedDelayed && (
-                      <UpdateAvailable
-                        updateButtonClick={this.updateButtonClick}
-                      />
-                    )}
-                    <div id="th-global-content" className="th-global-content">
-                      <span className="th-view-content" tabIndex={-1}>
-                        <PushList
-                          user={user}
-                          repoName={repoName}
-                          revision={revision}
-                          currentRepo={currentRepo}
-                          filterModel={filterModel}
-                          duplicateJobsVisible={duplicateJobsVisible}
-                          groupCountsExpanded={groupCountsExpanded}
-                          pushHealthVisibility={pushHealthVisibility}
-                        />
-                      </span>
+                    </span>
+                  </div>
+                </div>
+                <DetailsPanel
+                  resizedHeight={detailsHeight}
+                  currentRepo={currentRepo}
+                  repoName={repoName}
+                  user={user}
+                  classificationTypes={classificationTypes}
+                  classificationMap={classificationMap}
+                />
+              </SplitPane>
+              <Notifications />
+              {showShortCuts && (
+                <div
+                  id="onscreen-overlay"
+                  onClick={() => this.showOnScreenShortcuts(false)}
+                >
+                  <div id="onscreen-shortcuts">
+                    <div className="col-8">
+                      <ShortcutTable />
                     </div>
                   </div>
-                  <DetailsPanel
-                    resizedHeight={detailsHeight}
-                    currentRepo={currentRepo}
-                    repoName={repoName}
-                    user={user}
-                    classificationTypes={classificationTypes}
-                    classificationMap={classificationMap}
-                  />
-                </SplitPane>
-                <Notifications />
-                {showShortCuts && (
-                  <div
-                    id="onscreen-overlay"
-                    onClick={() => this.showOnScreenShortcuts(false)}
-                  >
-                    <div id="onscreen-shortcuts">
-                      <div className="col-8">
-                        <ShortcutTable />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </KeyboardShortcuts>
-            </PinnedJobs>
-          </Pushes>
+                </div>
+              )}
+            </KeyboardShortcuts>
+          </PinnedJobs>
         </Provider>
       </div>
     );

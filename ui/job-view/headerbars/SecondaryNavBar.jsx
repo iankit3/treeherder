@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faDotCircle } from '@fortawesome/free-regular-svg-icons';
 import {
@@ -13,7 +14,6 @@ import { thFilterGroups } from '../../helpers/filter';
 import { getRepo, getUrlParam, setUrlParam } from '../../helpers/location';
 import RepositoryModel from '../../models/repository';
 import ErrorBoundary from '../../shared/ErrorBoundary';
-import { withPushes } from '../context/Pushes';
 
 import WatchedRepo from './WatchedRepo';
 
@@ -373,4 +373,8 @@ SecondaryNavBar.propTypes = {
   toggleFieldFilterVisible: PropTypes.func.isRequired,
 };
 
-export default withPushes(SecondaryNavBar);
+const mapStateToProps = ({
+  pushes: { allUnclassifiedFailureCount, filteredUnclassifiedFailureCount },
+}) => ({ allUnclassifiedFailureCount, filteredUnclassifiedFailureCount });
+
+export default connect(mapStateToProps)(SecondaryNavBar);

@@ -21,7 +21,6 @@ import PushModel from '../../../models/push';
 import TaskclusterModel from '../../../models/taskcluster';
 import CustomJobActions from '../../CustomJobActions';
 import { withPinnedJobs } from '../../context/PinnedJobs';
-import { withPushes } from '../../context/Pushes';
 import { notify } from '../../redux/stores/notifications';
 
 import LogUrls from './LogUrls';
@@ -581,4 +580,4 @@ const mapStateToProps = ({ selectedJob: { selectedJob } }) => ({ selectedJob });
 export default connect(
   mapStateToProps,
   { notify },
-)(withPushes(withPinnedJobs(ActionBar)));
+)(withPinnedJobs(ActionBar));

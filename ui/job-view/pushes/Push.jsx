@@ -8,7 +8,6 @@ import {
   thOptionOrder,
   thPlatformMap,
 } from '../../helpers/constants';
-import { withPushes } from '../context/Pushes';
 import { getGroupMapKey } from '../../helpers/aggregateId';
 import { getAllUrlParams, getUrlParam } from '../../helpers/location';
 import JobModel from '../../models/job';
@@ -23,6 +22,7 @@ import { Revision } from './Revision';
 import PushHeader from './PushHeader';
 import PushJobs from './PushJobs';
 import { RevisionList } from './RevisionList';
+import PrimaryNavBar from '../headerbars/PrimaryNavBar';
 
 const watchCycleStates = ['none', 'push', 'job', 'none'];
 const platformArray = Object.values(thPlatformMap);
@@ -493,10 +493,10 @@ class Push extends React.Component {
           cycleWatchState={this.cycleWatchState}
           expandAllPushGroups={this.expandAllPushGroups}
           collapsed={collapsed}
-          getAllShownJobs={getAllShownJobs}
           selectedRunnableJobs={selectedRunnableJobs}
           notificationSupported={notificationSupported}
           pushHealthVisibility={pushHealthVisibility}
+          getAllShownJobs={getAllShownJobs}
         />
         <div className="push-body-divider" />
         {!collapsed ? (
@@ -553,4 +553,4 @@ Push.propTypes = {
 export default connect(
   null,
   { notify },
-)(withPushes(Push));
+)(Push);

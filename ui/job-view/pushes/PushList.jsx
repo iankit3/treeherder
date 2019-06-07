@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 import intersection from 'lodash/intersection';
 
 import ErrorBoundary from '../../shared/ErrorBoundary';
-import { withPushes } from '../context/Pushes';
 import { withPinnedJobs } from '../context/PinnedJobs';
 import { notify } from '../redux/stores/notifications';
 import {
   clearSelectedJob,
   setSelectedJobFromQueryString,
 } from '../redux/stores/selectedJob';
+import { fetchPushes, fetchNextPushes } from '../redux/stores/pushes';
 
 import Push from './Push';
 import PushLoadErrors from './PushLoadErrors';
@@ -22,6 +22,10 @@ class PushList extends React.Component {
     this.state = {
       notificationSupported: 'Notification' in window,
     };
+  }
+
+  componentDidMount() {
+    this.props.fetchPushes();
   }
 
   componentDidUpdate(prevProps) {
@@ -69,7 +73,8 @@ class PushList extends React.Component {
       filterModel,
       pushList,
       loadingPushes,
-      getNextPushes,
+      fetchNextPushes,
+      getAllShownJobs,
       jobsLoaded,
       duplicateJobsVisible,
       groupCountsExpanded,
@@ -81,6 +86,7 @@ class PushList extends React.Component {
     if (!revision) {
       this.setWindowTitle();
     }
+    console.log('pushList', pushList);
 
     return (
       <div onClick={evt => this.clearIfEligibleTarget(evt.target)}>
@@ -103,6 +109,7 @@ class PushList extends React.Component {
                 groupCountsExpanded={groupCountsExpanded}
                 isOnlyRevision={push.revision === revision}
                 pushHealthVisibility={pushHealthVisibility}
+                getAllShownJobs={getAllShownJobs}
               />
             </ErrorBoundary>
           ))}
@@ -126,7 +133,7 @@ class PushList extends React.Component {
             {[10, 20, 50].map(count => (
               <div
                 className="btn btn-light-bordered"
-                onClick={() => getNextPushes(count)}
+                onClick={() => fetchNextPushes(count)}
                 key={count}
               >
                 {count}
@@ -144,7 +151,8 @@ PushList.propTypes = {
   user: PropTypes.object.isRequired,
   filterModel: PropTypes.object.isRequired,
   pushList: PropTypes.array.isRequired,
-  getNextPushes: PropTypes.func.isRequired,
+  fetchNextPushes: PropTypes.func.isRequired,
+  fetchPushes: PropTypes.func.isRequired,
   loadingPushes: PropTypes.bool.isRequired,
   jobsLoaded: PropTypes.bool.isRequired,
   duplicateJobsVisible: PropTypes.bool.isRequired,
@@ -154,6 +162,7 @@ PushList.propTypes = {
   clearSelectedJob: PropTypes.func.isRequired,
   countPinnedJobs: PropTypes.number.isRequired,
   setSelectedJobFromQueryString: PropTypes.func.isRequired,
+  getAllShownJobs: PropTypes.func.isRequired,
   jobMap: PropTypes.object.isRequired,
   notify: PropTypes.func.isRequired,
   revision: PropTypes.string,
@@ -165,7 +174,29 @@ PushList.defaultProps = {
   currentRepo: {},
 };
 
+const mapStateToProps = ({
+  pushes: {
+    loadingPushes,
+    jobsLoaded,
+    jobMap,
+    pushList,
+    allUnclassifiedFailureCount,
+  },
+}) => ({
+  loadingPushes,
+  jobsLoaded,
+  jobMap,
+  pushList,
+  allUnclassifiedFailureCount,
+});
+
 export default connect(
-  null,
-  { notify, clearSelectedJob, setSelectedJobFromQueryString },
-)(withPushes(withPinnedJobs(PushList)));
+  mapStateToProps,
+  {
+    notify,
+    clearSelectedJob,
+    setSelectedJobFromQueryString,
+    fetchNextPushes,
+    fetchPushes,
+  },
+)(withPinnedJobs(PushList));
